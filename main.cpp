@@ -1,39 +1,85 @@
 //! @date 20160709 0033
 //! @author mail@marcelpetrick.it
-//! topic:  compare the content of two files; per line one item as
+//! @brief: compare the content of two files; per line one item as
 //!         ISBN (number; 13 digits; no leading or trailing whitespace (remove this));
 //!         print every item of input0 which is not contained in input1
+//! @version 0.01 unreleased
+//! @file main.cpp
 
-//#include <QCoreApplication>
+//Qt-includes
+#include <QCoreApplication> //for arg-list
+#include <QTextStream>
+#include <QStringList>
+#include <QFileInfo> //for the file-existance-check
 
-#include <iostream>
+#include <QDebug> //maybe remove later
 
-//! @todo check how argc, argv work
-//!
-int main(int argc, char *argv[])
+////C++
+//#include <iostream> //cerr/cout
+//using namespace std;
+
+void readFile(QString fileName)
 {
-//    QCoreApplication a(argc, argv);
-
-    if(argc != 3)
+    QFile inputFile(fileName);
+    if(inputFile.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        std::cout << "invalid number of arguments: provide two filenames" << std::endl;
+        static int lineNumber(1); //because pluma numbers starting with 1
+        QTextStream inputStream(&inputFile);
+        while(!inputStream.atEnd())
+        {
+            QString const line = inputStream.readLine().trimmed(); //maybe also check simplified()
+            qDebug() << "line " << QString::number(lineNumber) << ": #" << line << "#"; //enclosed to proof for correct trimming
+
+            lineNumber++;
+        }
+
+        qDebug() << "readFile(): read " << lineNumber << endl;
+        lineNumber= 0;
+
+        inputFile.close();
+    }
+}
+
+void processFile(QString path)
+{
+    QFileInfo fileInfo(path);
+    if(fileInfo.exists())
+    {
+        //! read content of current file
+        readFile(path);
     }
     else
     {
-        std::cout << "correct number" << std::endl;
-        std::cout << "argc:" << argc << std::endl;
-        std::cout << "argv:" << argv[0] << std::endl;
-        std::cout << "argv:" << argv[1] << std::endl;
-        std::cout << "argv:" << argv[2] << std::endl;
+        qDebug() << "processFile(): the file DOES NOT exist! path was \"" << path << "\"" << endl;
+    }
+}
 
-        //open file0 and file1
-        //read complete content of the file: cut in array of strings
-        //trim the strings before insertion
-        //sort contents?
-        //take first: compare against second; remove all "found" ones, return remains
+int main(int argc, char* argv[])
+{
+    QCoreApplication app(argc, argv);
+    //QTextStream cerr(stderr);
+    QStringList argList(app.arguments());
 
+    //check the arguments
+    {
+        qDebug() << "main(): argc = " << argc << endl;
+        // print the current argument list
+        for(int i = 0; i < argList.size(); ++i)
+        {
+            qDebug() << QString("argv #%1 is %2").arg(i).arg(argList[i]) << endl;
+        }
     }
 
-    return 0;
-//    return a.exec();
+    if(argList.size() == 3) //check for existance of at least one "real" parameter
+    {
+        //call for each file the read-in
+        processFile(argList[1]); //first "real" arg; first argument is the binary-name itself
+        processFile(argList[2]); //second
+    }
+    else
+    {
+        qDebug() << "main(): not enough arguments: exactly two filenames needed! given were: " << argList.size() << endl;
+    }
+
+    return 0; //for success
 }
