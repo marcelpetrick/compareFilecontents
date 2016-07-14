@@ -1,4 +1,4 @@
-//! @date 20160709 0033
+//! @date 20160714 1400
 //! @author mail@marcelpetrick.it
 //! @brief: compare the content of two files; per line one item as
 //!         ISBN (number; 13 digits; no leading or trailing whitespace (remove this));
@@ -8,18 +8,15 @@
 
 //Qt-includes
 #include <QCoreApplication> //for arg-list
-#include <QTextStream>
-#include <QStringList>
+#include <QTextStream> //read file
 #include <QFileInfo> //for the file-existance-check
+#include <QDebug> //! @todo remove later
+#include <QStringList>
 
-#include <QDebug> //maybe remove later
-
-////C++
-//#include <iostream> //cerr/cout
-//using namespace std;
-
-void readFile(QString fileName)
+QStringList readFile(QString fileName)
 {
+    QStringList returnValue;
+
     QFile inputFile(fileName);
     if(inputFile.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -28,30 +25,68 @@ void readFile(QString fileName)
         while(!inputStream.atEnd())
         {
             QString const line = inputStream.readLine().trimmed(); //maybe also check simplified()
-            qDebug() << "line " << QString::number(lineNumber) << ": #" << line << "#"; //enclosed to proof for correct trimming
+            qDebug() << "line " << QString(lineNumber < 10 ? "0" : "").append(QString::number(lineNumber)) << ": #" << line << "#"; //enclosed to proof for correct trimming
+            if(!line.isEmpty())
+            {
+                returnValue.append(line); //! insert
+            }
 
             lineNumber++;
         }
 
-        qDebug() << "readFile(): read " << lineNumber << endl;
+        qDebug() << "readFile(): read " << lineNumber;
         lineNumber= 0;
 
         inputFile.close();
     }
+
+    //! sort
+    returnValue.sort(Qt::CaseSensitive); //just to make it clear; default is CS anyway
+
+    //! remove duplicates and if something happened: report this!
+    long removedDuplicates = returnValue.removeDuplicates();
+    qDebug() << "readFile(): removed " << removedDuplicates << " Duplicates" << endl;
+
+    //! hand over
+    return returnValue;
 }
 
-void processFile(QString path)
+QStringList processFile(QString path)
 {
+    QStringList returnValue;
+
     QFileInfo fileInfo(path);
     if(fileInfo.exists())
     {
         //! read content of current file
-        readFile(path);
+        returnValue = readFile(path);
     }
     else
     {
         qDebug() << "processFile(): the file DOES NOT exist! path was \"" << path << "\"" << endl;
     }
+
+    //! hand over
+    return returnValue;
+}
+
+QStringList filterAgainst(QStringList list0, QStringList list1)
+{
+    QStringList returnValue;
+
+//    qDebug() << "filterAgainst(): reached" << endl;
+
+    foreach(QString item, list0)
+    {
+        bool const contained(list1.contains(item));
+        if(!contained)
+        {
+            returnValue.append(item);
+        }
+    }
+
+    //! hand over
+    return returnValue;
 }
 
 int main(int argc, char* argv[])
@@ -73,8 +108,17 @@ int main(int argc, char* argv[])
     if(argList.size() == 3) //check for existance of at least one "real" parameter
     {
         //call for each file the read-in
-        processFile(argList[1]); //first "real" arg; first argument is the binary-name itself
-        processFile(argList[2]); //second
+        QStringList list0 = processFile(argList[1]); //first "real" arg; first argument is the binary-name itself
+        QStringList list1 = processFile(argList[2]); //second
+
+        //! @todo do some more stuff
+        QStringList result = filterAgainst(list0, list1);
+
+        //print filtered result: not "filter" by contain, but "!contained"
+        foreach(QString item, result)
+        {
+            qDebug() << "result: " << item;
+        }
     }
     else
     {
