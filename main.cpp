@@ -1,6 +1,8 @@
 //! @date 20160709 0033
 //! @author mail@marcelpetrick.it
-//! topic: compare the content of two files; per line one item as ISBN (number; 13 digits; no leading or trailing whitespace (remove this)); print every item of input0 which is not contained in input1
+//! topic:  compare the content of two files; per line one item as
+//!         ISBN (number; 13 digits; no leading or trailing whitespace (remove this));
+//!         print every item of input0 which is not contained in input1
 
 //#include <QCoreApplication>
 
@@ -25,9 +27,10 @@ int main(int argc, char *argv[])
         std::cout << "argv:" << argv[2] << std::endl;
 
         //open file0 and file1
+        //read complete content of the file: cut in array of strings
+        //trim the strings before insertion
         //sort contents?
-        //take first
-
+        //take first: compare against second; remove all "found" ones, return remains
 
     }
 
