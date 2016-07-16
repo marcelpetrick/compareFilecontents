@@ -1,18 +1,19 @@
-//! @date 20160714 1400
+//! @date 20160714 1500
 //! @author mail@marcelpetrick.it
-//! @brief: compare the content of two files; per line one item as
+//! @brief: compare the content of two files; one item per line as
 //!         ISBN (number; 13 digits; no leading or trailing whitespace (remove this));
-//!         print every item of input0 which is not contained in input1
-//! @version 0.01 unreleased
+//!         print every item of input0 which is not contained in input1 to std::cerr.
+//! @version 0.01
 //! @file main.cpp
 
 //Qt-includes
 #include <QCoreApplication> //for arg-list
-#include <QTextStream> //read file
+#include <QTextStream> //for reading the files
 #include <QFileInfo> //for the file-existance-check
 #include <QDebug> //! @todo remove later
 #include <QStringList>
 
+//! @brief  TODO
 QStringList readFile(QString fileName)
 {
     QStringList returnValue;
@@ -20,37 +21,39 @@ QStringList readFile(QString fileName)
     QFile inputFile(fileName);
     if(inputFile.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        static int lineNumber(1); //because pluma numbers starting with 1
+//        static int lineNumber(1); //because pluma numbers starting with 1
         QTextStream inputStream(&inputFile);
         while(!inputStream.atEnd())
         {
-            QString const line = inputStream.readLine().trimmed(); //maybe also check simplified()
-            qDebug() << "line " << QString(lineNumber < 10 ? "0" : "").append(QString::number(lineNumber)) << ": #" << line << "#"; //enclosed to proof for correct trimming
+            QString const line = inputStream.readLine().trimmed(); //remove whitespace
+//            qDebug() << "line " << QString(lineNumber < 10 ? "0" : "").append(QString::number(lineNumber))
+//                << ": #" << line << "#"; //enclosed to proof for correct trimming
             if(!line.isEmpty())
             {
                 returnValue.append(line); //! insert
             }
 
-            lineNumber++;
+//            lineNumber++;
         }
 
-        qDebug() << "readFile(): read " << lineNumber;
-        lineNumber= 0;
+//        qDebug() << "readFile(): read " << lineNumber;
+//        lineNumber= 0;
 
         inputFile.close();
     }
 
-    //! sort
+    //! sort: not really necessary because of the check via "contains" ..
     returnValue.sort(Qt::CaseSensitive); //just to make it clear; default is CS anyway
 
     //! remove duplicates and if something happened: report this!
-    long removedDuplicates = returnValue.removeDuplicates();
-    qDebug() << "readFile(): removed " << removedDuplicates << " Duplicates" << endl;
+    /*long removedDuplicates = */returnValue.removeDuplicates();
+//    qDebug() << "readFile(): removed " << removedDuplicates << " Duplicates" << endl;
 
     //! hand over
     return returnValue;
 }
 
+//! @brief  TODO
 QStringList processFile(QString path)
 {
     QStringList returnValue;
@@ -66,15 +69,13 @@ QStringList processFile(QString path)
         qDebug() << "processFile(): the file DOES NOT exist! path was \"" << path << "\"" << endl;
     }
 
-    //! hand over
     return returnValue;
 }
 
+//! @brief  Check for each item of input0 if it is not contained in input1: append to returned QStringList.
 QStringList filterAgainst(QStringList list0, QStringList list1)
 {
     QStringList returnValue;
-
-//    qDebug() << "filterAgainst(): reached" << endl;
 
     foreach(QString item, list0)
     {
@@ -85,25 +86,25 @@ QStringList filterAgainst(QStringList list0, QStringList list1)
         }
     }
 
-    //! hand over
     return returnValue;
 }
 
+//! @brief  TODO
 int main(int argc, char* argv[])
 {
+    //for easier access to the arguments; without real parsing
     QCoreApplication app(argc, argv);
-    //QTextStream cerr(stderr);
     QStringList argList(app.arguments());
 
-    //check the arguments
-    {
-        qDebug() << "main(): argc = " << argc << endl;
-        // print the current argument list
-        for(int i = 0; i < argList.size(); ++i)
-        {
-            qDebug() << QString("argv #%1 is %2").arg(i).arg(argList[i]) << endl;
-        }
-    }
+//    //check the arguments
+//    {
+//        qDebug() << "main(): argc = " << argc << endl;
+//        // print the current argument list
+//        for(int i = 0; i < argList.size(); ++i)
+//        {
+//            qDebug() << QString("argv #%1 is %2").arg(i).arg(argList[i]) << endl;
+//        }
+//    }
 
     if(argList.size() == 3) //check for existance of at least one "real" parameter
     {
